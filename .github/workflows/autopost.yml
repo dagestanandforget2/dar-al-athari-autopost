@@ -1,0 +1,58 @@
+name: Post a book
+
+on:
+  schedule:
+    - cron: "23 16 * * *"   # ~12:23 pm New York (11:23 am in winter)
+    - cron: "17 23 * * *"   # ~7:17 pm New York (6:17 pm in winter)
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: "What to do"
+        type: choice
+        options: [post to both, test image only, telegram only, instagram only]
+        default: post to both
+
+permissions:
+  contents: write
+
+concurrency: autopost
+
+jobs:
+  post:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install Arabic text shaping + fonts
+        run: |
+          sudo apt-get update -qq && sudo apt-get install -y -qq libraqm0 libfribidi0
+          mkdir -p fonts
+          curl -fsSL -o fonts/Amiri-Bold.ttf    https://github.com/google/fonts/raw/main/ofl/amiri/Amiri-Bold.ttf
+          curl -fsSL -o fonts/Amiri-Regular.ttf https://github.com/google/fonts/raw/main/ofl/amiri/Amiri-Regular.ttf
+
+      - run: pip install -q -r requirements.txt
+
+      - name: Post
+        env:
+          IG_ACCESS_TOKEN: ${{ secrets.IG_ACCESS_TOKEN }}
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHANNEL: ${{ secrets.TELEGRAM_CHANNEL }}
+          DRY_RUN: ${{ inputs.mode == 'test image only' && '1' || '0' }}
+          SKIP_IG: ${{ inputs.mode == 'telegram only' && '1' || '0' }}
+          SKIP_TELEGRAM: ${{ inputs.mode == 'instagram only' && '1' || '0' }}
+        run: |
+          git config user.name  "autopost-bot"
+          git config user.email "autopost-bot@users.noreply.github.com"
+          python post.py
+
+      - name: Save story image for review
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: story-image
+          path: stories/*.jpg
+          retention-days: 7

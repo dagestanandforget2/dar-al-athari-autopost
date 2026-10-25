@@ -1,1 +1,11 @@
-# dar-al-athari-autopost
+# Dar Al Athari Autopost
+
+Posts one in-stock book from daralathari.com twice a day:
+- **Instagram Story**: branded image with title, price and site
+- **Telegram channel**: book photo, title, price and a "Buy now" button
+
+Books rotate randomly and none repeats until every book has been posted.
+Sold-out books are skipped automatically. New books are picked up automatically.
+
+**Run it now:** Actions → Post a book → Run workflow.
+**Change times:** edit the `cron` lines in `.github/workflows/autopost.yml` (times are UTC).
