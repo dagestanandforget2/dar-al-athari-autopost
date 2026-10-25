@@ -15,6 +15,7 @@ jobs:
           IG: ${{ secrets.IG_ACCESS_TOKEN }}
           GH_TOKEN: ${{ secrets.GH_PAT }}
         run: |
+          if [ -z "$IG" ] || [ -z "$GH_TOKEN" ]; then echo "Instagram not set up yet - skipping."; exit 0; fi
           resp=$(curl -fsS "https://graph.instagram.com/refresh_access_token?grant_type=ig_refresh_token&access_token=$IG")
           new=$(echo "$resp" | jq -r .access_token)
           echo "::add-mask::$new"

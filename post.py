@@ -339,8 +339,12 @@ def telegram_post(book, photo):
 # ---------------------------------------------------------------- main
 def main():
     dry = os.getenv("DRY_RUN") == "1"
-    skip_ig = os.getenv("SKIP_IG") == "1"
-    skip_tg = os.getenv("SKIP_TELEGRAM") == "1"
+    skip_ig = os.getenv("SKIP_IG") == "1" or not os.getenv("IG_ACCESS_TOKEN")
+    skip_tg = os.getenv("SKIP_TELEGRAM") == "1" or not os.getenv("TELEGRAM_BOT_TOKEN")
+    if skip_ig:
+        print("Instagram skipped (no IG_ACCESS_TOKEN yet or turned off for this run)")
+    if skip_tg:
+        print("Telegram skipped (no TELEGRAM_BOT_TOKEN yet or turned off for this run)")
 
     books = fetch_books()
     if not books:
