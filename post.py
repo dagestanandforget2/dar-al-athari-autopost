@@ -370,16 +370,74 @@ def telegram_post(book, photo):
 
 
 # ---------------------------------------------------------------- main
-def main():
-    dry = os.getenv("DRY_RUN") == "1"
-    skip_ig = os.getenv("SKIP_IG") == "1" or not os.getenv("IG_ACCESS_TOKEN")
-    skip_tg = os.getenv("SKIP_TELEGRAM") == "1" or not os.getenv("TELEGRAM_BOT_TOKEN")
+def record_posted(handle):
+    """Mark a book as posted and push. If the bot and the schedule both posted at once,
+    re-sync with GitHub and re-apply instead of failing on a merge conflict."""
+    for attempt in range(4):
+        state = load_state()
+        if handle not in state["posted"]:
+            state["posted"].append(handle)
+        state["history"] = (state.get("history", []) + [
+            {"handle": handle, "time": time.strftime("%Y-%m-%d %H:%M UTC", time.gmtime())}])[-200:]
+        save_state(state)
+        try:
+            push_files([STATE_FILE], f"posted: {handle}")
+            return
+        except (RuntimeError, subprocess.CalledProcessError):
+            subprocess.run(["git", "rebase", "--abort"], cwd=ROOT)
+            git("fetch", "-q", "origin")
+            git("reset", "-q", "--hard", f"origin/{os.getenv('GITHUB_REF_NAME', 'main')}")
+            time.sleep(3)
+    print("Warning: could not save posted state")
+
+
+def publish(book, dry=False, skip_ig=None, skip_tg=None):
+    """Render the story and post one book everywhere that's configured. Returns a list of errors."""
+    if skip_ig is None:
+        skip_ig = os.getenv("SKIP_IG") == "1" or not os.getenv("IG_ACCESS_TOKEN")
+    if skip_tg is None:
+        skip_tg = os.getenv("SKIP_TELEGRAM") == "1" or not os.getenv("TELEGRAM_BOT_TOKEN")
     if skip_ig:
         print("Instagram skipped (no IG_ACCESS_TOKEN yet or turned off for this run)")
     if skip_tg:
         print("Telegram skipped (no TELEGRAM_BOT_TOKEN yet or turned off for this run)")
+    print(f"Posting: {book['title']} – {fmt_price(book['price'])}")
 
-    state = load_state()
+    photo = download_image(book["image"])
+    STORY_DIR.mkdir(exist_ok=True)
+    story_path = STORY_DIR / f"{book['handle'][:80]}-{int(time.time())}.jpg"
+    render_story(book, photo).save(story_path, "JPEG", quality=92)
+    print(f"Story image: {story_path.name}")
+
+    if dry:
+        print("DRY_RUN – nothing posted.")
+        return []
+
+    errors = []
+    if not skip_ig:
+        try:
+            repo = os.environ["GITHUB_REPOSITORY"]
+            branch = os.getenv("GITHUB_REF_NAME", "main")
+            removed = prune_old_stories()
+            push_files([STORY_DIR, *removed], f"story: {book['handle']}")
+            image_url = f"https://raw.githubusercontent.com/{repo}/{branch}/stories/{story_path.name}"
+            time.sleep(10)
+            print("Instagram story id:", ig_post_story(image_url))
+        except Exception as e:
+            errors.append(f"Instagram: {e}")
+
+    if not skip_tg:
+        try:
+            print("Telegram message id:", telegram_post(book, photo))
+        except Exception as e:
+            errors.append(f"Telegram: {e}")
+
+    if len(errors) < (2 - skip_ig - skip_tg):  # at least one platform worked
+        record_posted(book["handle"])
+    return errors
+
+
+def main():
     wanted = os.getenv("BOOK", "").strip()
     if wanted:
         scored = find_book(fetch_books(include_sold_out=True), wanted)
@@ -395,46 +453,9 @@ def main():
         books = fetch_books()
         if not books:
             sys.exit("No in-stock books with photos found.")
-        book = pick_book(books, state)
-    print(f"Picked: {book['title']} – {fmt_price(book['price'])}")
+        book = pick_book(books, load_state())
 
-    photo = download_image(book["image"])
-    STORY_DIR.mkdir(exist_ok=True)
-    story_path = STORY_DIR / f"{book['handle'][:80]}-{int(time.time())}.jpg"
-    render_story(book, photo).save(story_path, "JPEG", quality=92)
-    print(f"Story image: {story_path.name}")
-
-    if dry:
-        print("DRY_RUN – nothing posted.")
-        return
-
-    errors = []
-    if not skip_ig:
-        repo = os.environ["GITHUB_REPOSITORY"]
-        branch = os.getenv("GITHUB_REF_NAME", "main")
-        removed = prune_old_stories()
-        push_files([STORY_DIR, *removed], f"story: {book['handle']}")
-        image_url = f"https://raw.githubusercontent.com/{repo}/{branch}/stories/{story_path.name}"
-        time.sleep(10)
-        try:
-            print("Instagram story id:", ig_post_story(image_url))
-        except Exception as e:
-            errors.append(str(e))
-
-    if not skip_tg:
-        try:
-            print("Telegram message id:", telegram_post(book, photo))
-        except Exception as e:
-            errors.append(str(e))
-
-    if len(errors) < (2 - skip_ig - skip_tg):  # at least one platform worked
-        if book["handle"] not in state["posted"]:
-            state["posted"].append(book["handle"])
-        state["history"] = (state.get("history", []) + [
-            {"handle": book["handle"], "time": time.strftime("%Y-%m-%d %H:%M UTC", time.gmtime())}])[-200:]
-        save_state(state)
-        push_files([STATE_FILE], f"posted: {book['handle']}")
-
+    errors = publish(book, dry=os.getenv("DRY_RUN") == "1")
     if errors:
         sys.exit("\n".join(errors))
 

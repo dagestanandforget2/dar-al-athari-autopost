@@ -12,3 +12,6 @@ Sold-out books are skipped automatically. New books are picked up automatically.
 
 **Post a specific book:** Actions → Post a book → Run workflow → type part of the title in "Book name"
 (e.g. `tawheed`, `three fundamental principles`, `ثلاثة الأصول`). Works from the GitHub phone app too.
+
+**Post by messaging the bot:** DM your Telegram bot a book name (English or Arabic, one per line for several),
+or `/random`. It checks every ~5 minutes and replies ✅ when posted. Only the ID in `TELEGRAM_OWNER_ID` can use it.
