@@ -32,6 +32,7 @@ HELP = ("Send me a book name (English or Arabic) and I'll post it to the channel
         "• Several books at once: one per line after /sale\n"
         "• /sales – list running sales\n• <code>/endsale kitab tawheed</code> – end early\n"
         "• /salepost – post a roundup of books on sale\n\n"
+        "🆕 /newbooks – announce books added in the last 24h (<code>/newbooks 3d</code> for longer)\n\n"
         "🎟️ Discount codes:\n• <code>/code RAMADAN15 15%</code> – new code, everything, 48h\n"
         "• <code>/code TAWHEED5 $5 kitab at-tauhid 3d</code> – one book\n"
         "• <code>/code Sharh</code> – announce an existing code\n"
@@ -97,6 +98,13 @@ def handle_message(chat, uid, text, catalog_cache):
     cmd = text.split()[0].lower().split("@")[0]
     if cmd in ("/start", "/help"):
         reply(chat, HELP)
+        return
+    if cmd in ("/newbooks", "/new"):
+        import newbooks
+        try:
+            newbooks.newbooks_cmd(text[len(text.split()[0]):].strip(), lambda msg: reply(chat, msg))
+        except Exception as e:
+            reply(chat, f"⚠️ New books problem: <code>{html.escape(str(e))[:800]}</code>")
         return
     if cmd in ("/code", "/codes", "/endcode"):
         import codes

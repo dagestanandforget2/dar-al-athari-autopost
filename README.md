@@ -31,3 +31,7 @@ Change the frequency with `ROUNDUP_EVERY_HOURS` (default 20).
 and announces it; `/code TAWHEED5 $5 kitab at-tauhid 3d` for one book; `/code Sharh` announces an existing code;
 `/codes` lists active codes with uses and sales; `/endcode CODE` switches one off. Posts link to
 daralathari.com/discount/CODE so the code applies automatically. Needs `read_discounts` + `write_discounts` on the Shopify app.
+
+**New arrivals (Telegram bot):** `/newbooks` announces every in-stock book published in the last 24 hours
+(`/newbooks 3d` to look further back) in ONE post: a short blurb, an album of up to 10 covers, each title with price
+and link, plus an IG story with up to 4 covers. Already-announced books and Damaged/Clearance copies are skipped.

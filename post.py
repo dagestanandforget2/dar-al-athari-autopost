@@ -82,6 +82,8 @@ def fetch_books(include_sold_out=False):
                 "url": f"{SHOP_URL}/products/{p['handle']}",
                 "in_stock": bool(available),
                 "compare_at": compare_at if compare_at > price else None,
+                "published_at": p.get("published_at") or p.get("created_at"),
+                "images": [i["src"] for i in p.get("images", [])][:3],
             })
         page += 1
     return books
