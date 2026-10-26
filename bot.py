@@ -32,6 +32,10 @@ HELP = ("Send me a book name (English or Arabic) and I'll post it to the channel
         "• Several books at once: one per line after /sale\n"
         "• /sales – list running sales\n• <code>/endsale kitab tawheed</code> – end early\n"
         "• /salepost – post a roundup of books on sale\n\n"
+        "🎟️ Discount codes:\n• <code>/code RAMADAN15 15%</code> – new code, everything, 48h\n"
+        "• <code>/code TAWHEED5 $5 kitab at-tauhid 3d</code> – one book\n"
+        "• <code>/code Sharh</code> – announce an existing code\n"
+        "• /codes – active codes with uses and sales\n• <code>/endcode RAMADAN15</code> – switch off\n\n"
         "Posts take about a minute.")
 
 
@@ -93,6 +97,22 @@ def handle_message(chat, uid, text, catalog_cache):
     cmd = text.split()[0].lower().split("@")[0]
     if cmd in ("/start", "/help"):
         reply(chat, HELP)
+        return
+    if cmd in ("/code", "/codes", "/endcode"):
+        import codes
+        rest = text[len(text.split()[0]):].strip()
+        say = lambda msg: reply(chat, msg)
+        try:
+            if cmd == "/codes":
+                codes.codes_cmd(say)
+            elif cmd == "/endcode":
+                codes.endcode_cmd(rest, say)
+            else:
+                if not catalog_cache:
+                    catalog_cache.extend(post.fetch_books(include_sold_out=True))
+                codes.code_cmd(rest, catalog_cache, say)
+        except Exception as e:
+            reply(chat, f"⚠️ Code problem: <code>{html.escape(str(e))[:800]}</code>")
         return
     if cmd in ("/sale", "/endsale", "/sales", "/salepost"):
         import sale

@@ -30,7 +30,7 @@ import post
 
 SALES_FILE = post.ROOT / "state" / "sales.json"
 STORE = os.getenv("SHOPIFY_STORE", "z11fv0-ap.myshopify.com")
-API_VERSION = "2026-07"
+API_VERSION = "2026-10"
 TZ = ZoneInfo("America/New_York")
 DEFAULT_HOURS = 24
 

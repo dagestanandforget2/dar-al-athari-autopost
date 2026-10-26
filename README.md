@@ -26,3 +26,8 @@ Needs secrets `SHOPIFY_CLIENT_ID` and `SHOPIFY_CLIENT_SECRET` (Shopify Dev Dashb
 one scheduled post a day becomes a roundup featuring 2–3 sale books (rotating), as a Telegram album and one IG story.
 `/salepost` posts one now. `/sale` with one book per line starts them all and announces them in one roundup.
 Change the frequency with `ROUNDUP_EVERY_HOURS` (default 20).
+
+**Discount codes (Telegram bot):** `/code RAMADAN15 15%` creates a 15%-off-everything code (48h default) in Shopify
+and announces it; `/code TAWHEED5 $5 kitab at-tauhid 3d` for one book; `/code Sharh` announces an existing code;
+`/codes` lists active codes with uses and sales; `/endcode CODE` switches one off. Posts link to
+daralathari.com/discount/CODE so the code applies automatically. Needs `read_discounts` + `write_discounts` on the Shopify app.
