@@ -22,7 +22,7 @@ Messages reach GitHub through the Cloudflare Worker in `cloudflare/worker.js`.
 announces it, and a job every 10 minutes restores the price when time is up.
 Needs secrets `SHOPIFY_CLIENT_ID` and `SHOPIFY_CLIENT_SECRET` (Shopify Dev Dashboard app with product read/write access).
 
-**Sale roundups:** when 2+ in-stock books are on sale (flash sales or a compare-at price set in Shopify),
+**Sale roundups:** when 2+ in-stock books are on sale (not counting anything in a Damaged or Clearance collection, or with those words in the title) (flash sales or a compare-at price set in Shopify),
 one scheduled post a day becomes a roundup featuring 2–3 sale books (rotating), as a Telegram album and one IG story.
 `/salepost` posts one now. `/sale` with one book per line starts them all and announces them in one roundup.
 Change the frequency with `ROUNDUP_EVERY_HOURS` (default 20).

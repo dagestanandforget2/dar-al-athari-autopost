@@ -24,8 +24,47 @@ SALES_FILE = post.ROOT / "state" / "sales.json"
 RED = (176, 32, 38)
 
 
+# Discounts that aren't real "sales": anything in a collection whose name contains one of these
+# words (e.g. "Damaged Books 25-40% Off", "Clearance Sale 25% OFF"), or with it in the title.
+NOT_A_SALE = [w.strip().lower() for w in os.getenv("NOT_A_SALE", "damaged,clearance").split(",") if w.strip()]
+_excluded = None
+
+
+def excluded_handles():
+    """Product handles in Damaged / Clearance collections, read from the public store."""
+    global _excluded
+    if _excluded is not None:
+        return _excluded
+    _excluded = set()
+    try:
+        r = requests.get(f"{post.SHOP_URL}/collections.json?limit=250", headers=post.HEADERS, timeout=30)
+        r.raise_for_status()
+        for c in r.json().get("collections", []):
+            name = f"{c.get('handle', '')} {c.get('title', '')}".lower()
+            if any(w in name for w in NOT_A_SALE):
+                page = 1
+                while True:
+                    pr = requests.get(f"{post.SHOP_URL}/collections/{c['handle']}/products.json?limit=250&page={page}",
+                                      headers=post.HEADERS, timeout=30)
+                    pr.raise_for_status()
+                    items = pr.json().get("products", [])
+                    if not items:
+                        break
+                    _excluded.update(p["handle"] for p in items)
+                    page += 1
+    except Exception as e:
+        print(f"Warning: couldn't read clearance/damaged collections: {e}")
+    return _excluded
+
+
+def is_real_sale(b):
+    return (b.get("compare_at") and b.get("in_stock", True)
+            and b["handle"] not in excluded_handles()
+            and not any(w in b["title"].lower() for w in NOT_A_SALE))
+
+
 def sale_pool(books):
-    return [b for b in books if b.get("compare_at") and b.get("in_stock", True)]
+    return [b for b in books if is_real_sale(b)]
 
 
 def pct_off(b):
