@@ -16,6 +16,7 @@ Env vars (set as GitHub secrets / workflow env):
   GITHUB_REPOSITORY   set automatically by GitHub Actions (owner/repo)
   SHOP_URL            default https://daralathari.com
   COLLECTION          default all-books
+  BOOK="tawheed"       post this specific book instead of a random one
   DRY_RUN=1           build the image only, post nothing
   SKIP_IG=1 / SKIP_TELEGRAM=1   post to one platform only
 """
@@ -54,7 +55,7 @@ HEADERS = {"User-Agent": "DarAlAthari-Autopost/1.0"}
 
 
 # ---------------------------------------------------------------- catalog
-def fetch_books():
+def fetch_books(include_sold_out=False):
     books, page = [], 1
     while True:
         url = f"{SHOP_URL}/collections/{COLLECTION}/products.json?limit=250&page={page}"
@@ -66,9 +67,9 @@ def fetch_books():
         for p in products:
             variants = p.get("variants") or []
             available = [v for v in variants if v.get("available")]
-            if not available or not p.get("images"):
+            if not p.get("images") or not variants or (not available and not include_sold_out):
                 continue  # skip sold-out books and books with no photo
-            price = min(float(v["price"]) for v in available)
+            price = min(float(v["price"]) for v in (available or variants))
             books.append({
                 "handle": p["handle"],
                 "title": p["title"].strip(),
@@ -76,6 +77,7 @@ def fetch_books():
                 "price": price,
                 "image": p["images"][0]["src"],
                 "url": f"{SHOP_URL}/products/{p['handle']}",
+                "in_stock": bool(available),
             })
         page += 1
     return books
@@ -100,6 +102,37 @@ def pick_book(books, state):
         state["posted"] = []
         remaining = [b for b in books if b["handle"] != last] or books
     return random.choice(remaining)
+
+
+def _norm(t):
+    t = t.lower()
+    t = re.sub(r"[\u064B-\u0652\u0640]", "", t)          # Arabic diacritics/tatweel
+    t = t.replace("'", "").replace("’", "").replace("‘", "")
+    t = re.sub(r"[^\w\s]", " ", t)
+    t = re.sub(r"\b(al|ad|an|ar|as|ash|at|az|ul|us|ut)\s+", "", t)  # al-, ad-, ...
+    return re.sub(r"\s+", " ", t).strip()
+
+
+def find_book(books, query):
+    """Best match for a typed name. Tolerates spelling (Tawheed/Tauhid), al-/ad- and Arabic."""
+    from difflib import SequenceMatcher
+    q = _norm(query)
+    q_words = q.split()
+
+    def word_score(w, words):
+        return max((SequenceMatcher(None, w, x).ratio() for x in words), default=0)
+
+    scored = []
+    for b in books:
+        hay = _norm(b["title"] + " " + b["vendor"] + " " + b["handle"].replace("-", " "))
+        words = hay.split()
+        if not words:
+            continue
+        coverage = sum(word_score(w, words) for w in q_words) / max(len(q_words), 1)
+        whole = 1.0 if q in hay else 0.0
+        scored.append((coverage + 0.5 * whole, b))
+    scored.sort(key=lambda x: x[0], reverse=True)
+    return scored
 
 
 # ---------------------------------------------------------------- text helpers
@@ -346,11 +379,23 @@ def main():
     if skip_tg:
         print("Telegram skipped (no TELEGRAM_BOT_TOKEN yet or turned off for this run)")
 
-    books = fetch_books()
-    if not books:
-        sys.exit("No in-stock books with photos found.")
     state = load_state()
-    book = pick_book(books, state)
+    wanted = os.getenv("BOOK", "").strip()
+    if wanted:
+        scored = find_book(fetch_books(include_sold_out=True), wanted)
+        print("Top matches:")
+        for sc, b in scored[:5]:
+            print(f"  {sc:.2f}  {b['title']}")
+        if not scored or scored[0][0] < 0.75:
+            sys.exit(f"No book found matching '{wanted}'. Try a different spelling or more of the title.")
+        book = scored[0][1]
+        if not book["in_stock"]:
+            sys.exit(f"'{book['title']}' is sold out, so it wasn't posted.")
+    else:
+        books = fetch_books()
+        if not books:
+            sys.exit("No in-stock books with photos found.")
+        book = pick_book(books, state)
     print(f"Picked: {book['title']} – {fmt_price(book['price'])}")
 
     photo = download_image(book["image"])
@@ -383,7 +428,8 @@ def main():
             errors.append(str(e))
 
     if len(errors) < (2 - skip_ig - skip_tg):  # at least one platform worked
-        state["posted"].append(book["handle"])
+        if book["handle"] not in state["posted"]:
+            state["posted"].append(book["handle"])
         state["history"] = (state.get("history", []) + [
             {"handle": book["handle"], "time": time.strftime("%Y-%m-%d %H:%M UTC", time.gmtime())}])[-200:]
         save_state(state)

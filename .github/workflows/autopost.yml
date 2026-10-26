@@ -6,11 +6,15 @@ on:
     - cron: "17 23 * * *"   # ~7:17 pm New York (6:17 pm in winter)
   workflow_dispatch:
     inputs:
+      book:
+        description: "Book name (leave empty for a random book)"
+        type: string
+        required: false
       mode:
         description: "What to do"
         type: choice
-        options: [post to both, test image only, telegram only, instagram only]
-        default: post to both
+        options: [telegram only, post to both, instagram only, test image only]
+        default: telegram only
 
 permissions:
   contents: write
@@ -41,6 +45,7 @@ jobs:
           IG_ACCESS_TOKEN: ${{ secrets.IG_ACCESS_TOKEN }}
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           TELEGRAM_CHANNEL: ${{ secrets.TELEGRAM_CHANNEL }}
+          BOOK: ${{ inputs.book }}
           DRY_RUN: ${{ inputs.mode == 'test image only' && '1' || '0' }}
           SKIP_IG: ${{ inputs.mode == 'telegram only' && '1' || '0' }}
           SKIP_TELEGRAM: ${{ inputs.mode == 'instagram only' && '1' || '0' }}

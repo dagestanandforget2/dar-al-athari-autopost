@@ -9,3 +9,6 @@ Sold-out books are skipped automatically. New books are picked up automatically.
 
 **Run it now:** Actions → Post a book → Run workflow.
 **Change times:** edit the `cron` lines in `.github/workflows/autopost.yml` (times are UTC).
+
+**Post a specific book:** Actions → Post a book → Run workflow → type part of the title in "Book name"
+(e.g. `tawheed`, `three fundamental principles`, `ثلاثة الأصول`). Works from the GitHub phone app too.
