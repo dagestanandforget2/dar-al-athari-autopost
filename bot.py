@@ -29,7 +29,9 @@ HELP = ("Send me a book name (English or Arabic) and I'll post it to the channel
         "• <code>kitab tawheed</code>\n• <code>ثلاثة الأصول</code>\n"
         "• One book per line to post several\n• /random – a random in-stock book\n\n"
         "⚡️ Flash sales:\n• <code>/sale kitab tawheed 20% 24h</code>\n• <code>/sale kitab tawheed $12 6h</code>\n"
-        "• /sales – list running sales\n• <code>/endsale kitab tawheed</code> – end early\n\n"
+        "• Several books at once: one per line after /sale\n"
+        "• /sales – list running sales\n• <code>/endsale kitab tawheed</code> – end early\n"
+        "• /salepost – post a roundup of books on sale\n\n"
         "Posts take about a minute.")
 
 
@@ -92,8 +94,9 @@ def handle_message(chat, uid, text, catalog_cache):
     if cmd in ("/start", "/help"):
         reply(chat, HELP)
         return
-    if cmd in ("/sale", "/endsale", "/sales"):
+    if cmd in ("/sale", "/endsale", "/sales", "/salepost"):
         import sale
+        import roundup
         rest = text[len(text.split()[0]):].strip()
         say = lambda msg: reply(chat, msg)
         try:
@@ -101,10 +104,33 @@ def handle_message(chat, uid, text, catalog_cache):
                 sale.list_sales(say)
             elif cmd == "/endsale":
                 sale.end_sale_cmd(rest, say)
+            elif cmd == "/salepost":
+                pool = roundup.sale_pool(post.fetch_books())
+                if not pool:
+                    say("No books are on sale right now. Start one with <code>/sale kitab tawheed 20%</code>")
+                else:
+                    books, errors = roundup.publish_roundup(pool)
+                    say("✅ Sale roundup posted: " + ", ".join(html.escape(b["title"]) for b in books)
+                        + ("\n⚠️ " + html.escape("; ".join(errors)) if errors else ""))
             else:
                 if not catalog_cache:
                     catalog_cache.extend(post.fetch_books(include_sold_out=True))
-                sale.start_sale(rest, catalog_cache, say)
+                lines = [l.strip() for l in rest.splitlines() if l.strip()]
+                if len(lines) <= 1:
+                    sale.start_sale(rest, catalog_cache, say)
+                else:
+                    started = [b for b in (sale.start_sale(l, catalog_cache, say, announce=False)
+                                           for l in lines[:20]) if b]
+                    if started:
+                        new = {b["handle"]: b for b in started}
+                        pool = [new.get(b["handle"], b) for b in catalog_cache
+                                if b["in_stock"] and (b.get("compare_at") or b["handle"] in new)]
+                        n = len(started)
+                        intro = (f"⚡️ <b>FLASH SALE – {n} books just went on sale!</b>" if n > 1
+                                 else "⚡️ <b>FLASH SALE</b>")
+                        books, errors = roundup.publish_roundup(pool, first=started, intro=intro)
+                        say(f"📣 Announced {n} sale{'s' if n > 1 else ''} in one post."
+                            + ("\n⚠️ " + html.escape("; ".join(errors)) if errors else ""))
         except Exception as e:
             reply(chat, f"⚠️ Sale problem: <code>{html.escape(str(e))[:800]}</code>")
         return

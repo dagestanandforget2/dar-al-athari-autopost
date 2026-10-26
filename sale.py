@@ -131,7 +131,7 @@ def load_sales():
 
 
 # ---------------------------------------------------------------- actions
-def start_sale(text, catalog, reply):
+def start_sale(text, catalog, reply, announce=True):
     try:
         query, (kind, value), hours = parse_sale(text)
     except ValueError as e:
@@ -182,8 +182,14 @@ def start_sale(text, catalog, reply):
         "started": datetime.now(timezone.utc).isoformat(timespec="minutes")}}),
         f"sale start: {handle}", {})
 
-    # announce
     label = ends_label(ends)
+    if not announce:  # part of a multi-book sale: one roundup is posted afterwards
+        book.update(price=sale_price, compare_at=old_price)
+        reply(f"✅ <b>{html.escape(book['title'])}</b>: {post.fmt_price(old_price)} → "
+              f"<b>{post.fmt_price(sale_price)}</b> ({pct_off}% off), ends {label}")
+        return book
+
+    # announce
     book.update(price=sale_price, compare_at=old_price, sale_label=f"FLASH SALE  ·  {pct_off}% OFF",
                 sale_ends=label)
     caption = (f"⚡️ <b>FLASH SALE – {pct_off}% OFF</b> ⚡️\n\n"
@@ -198,6 +204,7 @@ def start_sale(text, catalog, reply):
     if errors:
         msg += "\n\n⚠️ Announcement problem:\n<code>" + html.escape("\n".join(errors))[:1500] + "</code>"
     reply(msg)
+    return book
 
 
 def end_sale(handle, sale):

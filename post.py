@@ -22,6 +22,7 @@ Env vars (set as GitHub secrets / workflow env):
 """
 
 import io
+import unicodedata
 import json
 import os
 import random
@@ -113,6 +114,13 @@ def _norm(t):
     t = t.replace("'", "").replace("’", "").replace("‘", "")
     t = re.sub(r"[^\w\s]", " ", t)
     t = re.sub(r"\b(al|ad|an|ar|as|ash|at|az|ul|us|ut)\s+", "", t)  # al-, ad-, ...
+    t = unicodedata.normalize("NFKD", t)
+    t = "".join(c for c in t if not unicodedata.combining(c))   # ā -> a, ḥ -> h
+    # transliteration variants: tawheed/tauhid/tawhid, usool/usul, aqeedah/aqidah
+    for a_, b_ in (("ee", "i"), ("ii", "i"), ("oo", "u"), ("ou", "u"), ("uu", "u"), ("aa", "a"),
+                   ("au", "aw"), ("ah ", "a "), ("dh", "th"), ("q", "k")):
+        t = t.replace(a_, b_)
+    t = re.sub(r"ah$", "a", t)
     return re.sub(r"\s+", " ", t).strip()
 
 
@@ -133,7 +141,9 @@ def find_book(books, query):
             continue
         coverage = sum(word_score(w, words) for w in q_words) / max(len(q_words), 1)
         whole = 1.0 if q in hay else 0.0
-        scored.append((coverage + 0.5 * whole, b))
+        title_words = _norm(b["title"]).split() or words
+        tight = 0.05 * min(len(q_words) / len(title_words), 1)  # slight edge to closer, shorter titles
+        scored.append((coverage + 0.5 * whole + tight, b))
     scored.sort(key=lambda x: x[0], reverse=True)
     return scored
 
@@ -494,7 +504,15 @@ def main():
         books = fetch_books()
         if not books:
             sys.exit("No in-stock books with photos found.")
-        book = pick_book(books, load_state())
+        state = load_state()
+        import roundup
+        pool = roundup.sale_pool(books)
+        if len(pool) >= 2 and roundup.roundup_due(state) and os.getenv("ROUNDUP", "1") == "1":
+            _, errors = roundup.publish_roundup(pool, dry=os.getenv("DRY_RUN") == "1")
+            if errors:
+                sys.exit("\n".join(errors))
+            return
+        book = pick_book(books, state)
 
     errors = publish(book, dry=os.getenv("DRY_RUN") == "1")
     if errors:
