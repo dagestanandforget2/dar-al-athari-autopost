@@ -1,6 +1,9 @@
 """
 Telegram bot commands: DM the bot a book name and it posts that book.
 
+Messages arrive instantly through the Cloudflare Worker (cloudflare/worker.js),
+which starts this script via a GitHub "repository_dispatch" with BOT_CHAT and BOT_TEXT.
+
   <book name>        e.g. "kitab tawheed" or "الداء والدواء" -> posts that book
   several lines      one book per line -> posts each
   /random            posts a random in-stock book
@@ -25,7 +28,7 @@ MATCH = 0.75
 HELP = ("Send me a book name (English or Arabic) and I'll post it to the channel.\n\n"
         "• <code>kitab tawheed</code>\n• <code>ثلاثة الأصول</code>\n"
         "• One book per line to post several\n• /random – a random in-stock book\n\n"
-        "I check for messages every few minutes, so replies can take a little while.")
+        "Posts take about a minute.")
 
 
 def tg(method, **data):
@@ -75,38 +78,43 @@ def handle_query(chat, text, catalog):
         reply(chat, f"✅ Posted {title}")
 
 
+def handle_message(chat, uid, text, catalog_cache):
+    if not OWNER:
+        reply(chat, f"Your Telegram ID is <code>{uid}</code>.\n\nAdd it in GitHub as the secret "
+                    f"<b>TELEGRAM_OWNER_ID</b>, then send me a book name.")
+        return
+    if str(uid) != OWNER:
+        reply(chat, "Sorry, this bot is private.")
+        return
+    if text.split()[0].lower() in ("/start", "/help"):
+        reply(chat, HELP)
+        return
+    if not catalog_cache:
+        catalog_cache.extend(post.fetch_books(include_sold_out=True))
+    for line in [l.strip() for l in text.splitlines() if l.strip()][:10]:
+        try:
+            handle_query(chat, line, catalog_cache)
+        except Exception as e:
+            reply(chat, f"⚠️ Something went wrong with “{html.escape(line)}”: <code>{html.escape(str(e))[:500]}</code>")
+
+
 def main():
+    # Instant mode: started by the Cloudflare Worker with one message
+    if os.getenv("BOT_TEXT"):
+        chat = os.environ["BOT_CHAT"]
+        handle_message(chat, chat, os.environ["BOT_TEXT"].strip(), [])  # private chat id == user id
+        return
+
+    # Fallback polling mode (only works while no webhook is set)
     updates = tg("getUpdates", timeout=0).get("result", [])
     if not updates:
         return
-    # confirm right away so a message is never handled twice, even if a later step fails
     tg("getUpdates", offset=updates[-1]["update_id"] + 1, timeout=0)
-
-    catalog = None
+    cache = []
     for u in updates:
         m = u.get("message")
-        if not m or m.get("chat", {}).get("type") != "private" or not m.get("text"):
-            continue
-        chat, uid, text = m["chat"]["id"], str(m["from"]["id"]), m["text"].strip()
-
-        if not OWNER:
-            reply(chat, f"Your Telegram ID is <code>{uid}</code>.\n\nAdd it in GitHub as the secret "
-                        f"<b>TELEGRAM_OWNER_ID</b>, then send me a book name.")
-            continue
-        if uid != OWNER:
-            reply(chat, "Sorry, this bot is private.")
-            continue
-        if text.split()[0].lower() in ("/start", "/help"):
-            reply(chat, HELP)
-            continue
-
-        if catalog is None:
-            catalog = post.fetch_books(include_sold_out=True)
-        for line in [l.strip() for l in text.splitlines() if l.strip()][:10]:
-            try:
-                handle_query(chat, line, catalog)
-            except Exception as e:
-                reply(chat, f"⚠️ Something went wrong with “{html.escape(line)}”: <code>{html.escape(str(e))[:500]}</code>")
+        if m and m.get("chat", {}).get("type") == "private" and m.get("text"):
+            handle_message(m["chat"]["id"], m["from"]["id"], m["text"].strip(), cache)
 
 
 if __name__ == "__main__":
