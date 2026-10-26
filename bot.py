@@ -28,6 +28,8 @@ MATCH = 0.75
 HELP = ("Send me a book name (English or Arabic) and I'll post it to the channel.\n\n"
         "• <code>kitab tawheed</code>\n• <code>ثلاثة الأصول</code>\n"
         "• One book per line to post several\n• /random – a random in-stock book\n\n"
+        "⚡️ Flash sales:\n• <code>/sale kitab tawheed 20% 24h</code>\n• <code>/sale kitab tawheed $12 6h</code>\n"
+        "• /sales – list running sales\n• <code>/endsale kitab tawheed</code> – end early\n\n"
         "Posts take about a minute.")
 
 
@@ -86,8 +88,25 @@ def handle_message(chat, uid, text, catalog_cache):
     if str(uid) != OWNER:
         reply(chat, "Sorry, this bot is private.")
         return
-    if text.split()[0].lower() in ("/start", "/help"):
+    cmd = text.split()[0].lower().split("@")[0]
+    if cmd in ("/start", "/help"):
         reply(chat, HELP)
+        return
+    if cmd in ("/sale", "/endsale", "/sales"):
+        import sale
+        rest = text[len(text.split()[0]):].strip()
+        say = lambda msg: reply(chat, msg)
+        try:
+            if cmd == "/sales":
+                sale.list_sales(say)
+            elif cmd == "/endsale":
+                sale.end_sale_cmd(rest, say)
+            else:
+                if not catalog_cache:
+                    catalog_cache.extend(post.fetch_books(include_sold_out=True))
+                sale.start_sale(rest, catalog_cache, say)
+        except Exception as e:
+            reply(chat, f"⚠️ Sale problem: <code>{html.escape(str(e))[:800]}</code>")
         return
     if not catalog_cache:
         catalog_cache.extend(post.fetch_books(include_sold_out=True))

@@ -69,7 +69,9 @@ def fetch_books(include_sold_out=False):
             available = [v for v in variants if v.get("available")]
             if not p.get("images") or not variants or (not available and not include_sold_out):
                 continue  # skip sold-out books and books with no photo
-            price = min(float(v["price"]) for v in (available or variants))
+            cheapest = min((available or variants), key=lambda v: float(v["price"]))
+            price = float(cheapest["price"])
+            compare_at = float(cheapest.get("compare_at_price") or 0)
             books.append({
                 "handle": p["handle"],
                 "title": p["title"].strip(),
@@ -78,6 +80,7 @@ def fetch_books(include_sold_out=False):
                 "image": p["images"][0]["src"],
                 "url": f"{SHOP_URL}/products/{p['handle']}",
                 "in_stock": bool(available),
+                "compare_at": compare_at if compare_at > price else None,
             })
         page += 1
     return books
@@ -236,11 +239,19 @@ def render_story(book, photo):
     canvas = Image.blend(canvas, blur, 0.22)
     draw = ImageDraw.Draw(canvas)
 
-    # brand line (below Instagram's top UI)
-    brand = font("Amiri-Bold.ttf", 40)
-    label = "D A R   A L   A T H A R I"
-    draw.text(((W - text_w(draw, label, brand)) / 2, 250), label, font=brand, fill=GOLD)
-    draw.line([(W / 2 - 60, 312), (W / 2 + 60, 312)], fill=GOLD, width=2)
+    # flash-sale banner
+    if book.get("sale_label"):
+        bf = font("Amiri-Bold.ttf", 54)
+        draw.rectangle([0, 240, W, 326], fill=(176, 32, 38))
+        lbl = book["sale_label"]
+        bb = draw.textbbox((0, 0), lbl, font=bf)
+        draw.text(((W - (bb[2] - bb[0])) / 2 - bb[0], 283 - (bb[3] + bb[1]) / 2), lbl, font=bf, fill=(255, 245, 230))
+    else:
+        # brand line (below Instagram's top UI)
+        brand = font("Amiri-Bold.ttf", 40)
+        label = "D A R   A L   A T H A R I"
+        draw.text(((W - text_w(draw, label, brand)) / 2, 250), label, font=brand, fill=GOLD)
+        draw.line([(W / 2 - 60, 312), (W / 2 + 60, 312)], fill=GOLD, width=2)
 
     # book photo with shadow
     box_w, box_h = 700, 820
@@ -273,6 +284,15 @@ def render_story(book, photo):
     pw = text_w(draw, price, pf) + 100
     py0 = max(y + 34, 1500)
     py0 = min(py0, 1560)
+    if book.get("compare_at"):
+        of = font("Amiri-Regular.ttf", 46)
+        old = fmt_price(book["compare_at"])
+        ow = text_w(draw, old, of)
+        ob = draw.textbbox((0, 0), old, font=of)
+        oy = py0 - 70
+        draw.text(((W - ow) / 2, oy), old, font=of, fill=MUTED)
+        mid = oy + (ob[1] + ob[3]) / 2
+        draw.line([((W - ow) / 2 - 6, mid), ((W + ow) / 2 + 6, mid)], fill=(200, 70, 70), width=4)
     draw.rounded_rectangle([(W - pw) / 2, py0, (W + pw) / 2, py0 + 104], radius=52, fill=GOLD)
     bbox = draw.textbbox((0, 0), price, font=pf)
     draw.text(((W - (bbox[2] - bbox[0])) / 2 - bbox[0], py0 + 52 - (bbox[3] + bbox[1]) / 2),
@@ -282,6 +302,10 @@ def render_story(book, photo):
     ff = font("Amiri-Regular.ttf", 38)
     footer = f"Order at {SITE_LABEL}"
     draw.text(((W - text_w(draw, footer, ff)) / 2, 1690), footer, font=ff, fill=CREAM)
+    if book.get("sale_ends"):
+        ef = font("Amiri-Bold.ttf", 40)
+        ends = f"Sale ends {book['sale_ends']}"
+        draw.text(((W - text_w(draw, ends, ef)) / 2, 1632), ends, font=ef, fill=GOLD)
     return canvas
 
 
@@ -347,15 +371,23 @@ def esc(s):
     return s.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
 
 
-def telegram_post(book, photo):
+def price_html(book):
+    if book.get("compare_at"):
+        return f"<s>{fmt_price(book['compare_at'])}</s>  <b>{fmt_price(book['price'])}</b>"
+    return f"<b>{fmt_price(book['price'])}</b>"
+
+
+def telegram_post(book, photo, caption=None):
     token = os.environ["TELEGRAM_BOT_TOKEN"]
     chat = os.environ["TELEGRAM_CHANNEL"]
-    lines = [f"📚 <b>{esc(book['title'])}</b>"]
-    if book["vendor"] and book["vendor"].lower() != "dar al athari":
-        lines.append(f"✍️ {esc(book['vendor'])}")
-    lines.append(f"💵 <b>{fmt_price(book['price'])}</b>")
-    lines.append(f"\n🛒 <a href=\"{book['url']}\">Order now on {SITE_LABEL}</a>")
-    caption = "\n".join(lines)[:1024]
+    if caption is None:
+        lines = [f"📚 <b>{esc(book['title'])}</b>"]
+        if book["vendor"] and book["vendor"].lower() != "dar al athari":
+            lines.append(f"✍️ {esc(book['vendor'])}")
+        lines.append(f"💵 {price_html(book)}")
+        lines.append(f"\n🛒 <a href=\"{book['url']}\">Order now on {SITE_LABEL}</a>")
+        caption = "\n".join(lines)
+    caption = caption[:1024]
 
     buf = io.BytesIO()
     photo.save(buf, "JPEG", quality=92)
@@ -370,28 +402,37 @@ def telegram_post(book, photo):
 
 
 # ---------------------------------------------------------------- main
-def record_posted(handle):
-    """Mark a book as posted and push. If the bot and the schedule both posted at once,
-    re-sync with GitHub and re-apply instead of failing on a merge conflict."""
+def commit_json(path, mutate, message, default=None):
+    """Load a JSON state file, apply mutate(data), save and push. If another job pushed at the
+    same moment, re-sync with GitHub and re-apply instead of failing on a merge conflict."""
     for attempt in range(4):
-        state = load_state()
-        if handle not in state["posted"]:
-            state["posted"].append(handle)
-        state["history"] = (state.get("history", []) + [
-            {"handle": handle, "time": time.strftime("%Y-%m-%d %H:%M UTC", time.gmtime())}])[-200:]
-        save_state(state)
+        data = json.loads(path.read_text()) if path.exists() else json.loads(json.dumps(default or {}))
+        mutate(data)
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text(json.dumps(data, indent=2, ensure_ascii=False) + "\n")
         try:
-            push_files([STATE_FILE], f"posted: {handle}")
-            return
+            push_files([path], message)
+            return True
         except (RuntimeError, subprocess.CalledProcessError):
             subprocess.run(["git", "rebase", "--abort"], cwd=ROOT)
             git("fetch", "-q", "origin")
             git("reset", "-q", "--hard", f"origin/{os.getenv('GITHUB_REF_NAME', 'main')}")
             time.sleep(3)
-    print("Warning: could not save posted state")
+    print(f"Warning: could not save {path.name}")
+    return False
 
 
-def publish(book, dry=False, skip_ig=None, skip_tg=None):
+def record_posted(handle):
+    def mutate(state):
+        state.setdefault("posted", [])
+        if handle not in state["posted"]:
+            state["posted"].append(handle)
+        state["history"] = (state.get("history", []) + [
+            {"handle": handle, "time": time.strftime("%Y-%m-%d %H:%M UTC", time.gmtime())}])[-200:]
+    commit_json(STATE_FILE, mutate, f"posted: {handle}", {"posted": [], "history": []})
+
+
+def publish(book, dry=False, skip_ig=None, skip_tg=None, caption=None, record=True):
     """Render the story and post one book everywhere that's configured. Returns a list of errors."""
     if skip_ig is None:
         skip_ig = os.getenv("SKIP_IG") == "1" or not os.getenv("IG_ACCESS_TOKEN")
@@ -428,11 +469,11 @@ def publish(book, dry=False, skip_ig=None, skip_tg=None):
 
     if not skip_tg:
         try:
-            print("Telegram message id:", telegram_post(book, photo))
+            print("Telegram message id:", telegram_post(book, photo, caption))
         except Exception as e:
             errors.append(f"Telegram: {e}")
 
-    if len(errors) < (2 - skip_ig - skip_tg):  # at least one platform worked
+    if record and len(errors) < (2 - skip_ig - skip_tg):  # at least one platform worked
         record_posted(book["handle"])
     return errors
 

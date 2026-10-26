@@ -1,0 +1,40 @@
+name: End flash sales
+
+# Every 10 minutes: puts prices back on any flash sale whose time is up.
+on:
+  schedule:
+    - cron: "*/10 * * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  expire:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Any sales ending?
+        id: check
+        run: |
+          python3 - <<'PY' >> "$GITHUB_OUTPUT"
+          import json, time, pathlib
+          p = pathlib.Path("state/sales.json")
+          sales = json.loads(p.read_text()) if p.exists() else {}
+          due = any(s["ends_at"] <= time.time() for s in sales.values())
+          print(f"due={'true' if due else 'false'}")
+          PY
+
+      - if: steps.check.outputs.due == 'true'
+        name: End them
+        env:
+          SHOPIFY_CLIENT_ID: ${{ secrets.SHOPIFY_CLIENT_ID }}
+          SHOPIFY_CLIENT_SECRET: ${{ secrets.SHOPIFY_CLIENT_SECRET }}
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_OWNER_ID: ${{ secrets.TELEGRAM_OWNER_ID }}
+        run: |
+          pip install -q requests Pillow
+          git config user.name  "autopost-bot"
+          git config user.email "autopost-bot@users.noreply.github.com"
+          python sale.py expire

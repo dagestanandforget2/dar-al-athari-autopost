@@ -16,3 +16,8 @@ Sold-out books are skipped automatically. New books are picked up automatically.
 **Post by messaging the bot:** DM your Telegram bot a book name (English or Arabic, one per line for several),
 or `/random`. It replies ⏳ instantly and ✅ about a minute later when posted. Only the ID in `TELEGRAM_OWNER_ID` can use it.
 Messages reach GitHub through the Cloudflare Worker in `cloudflare/worker.js`.
+
+**Flash sales (Telegram bot):** `/sale kitab tawheed 20% 24h` or `/sale kitab tawheed $12 6h` (default 24h),
+`/sales` to list, `/endsale kitab tawheed` to end early. Lowers the price on the store (old price crossed out),
+announces it, and a job every 10 minutes restores the price when time is up.
+Needs secrets `SHOPIFY_CLIENT_ID` and `SHOPIFY_CLIENT_SECRET` (Shopify Dev Dashboard app with product read/write access).
