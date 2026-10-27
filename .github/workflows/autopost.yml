@@ -1,9 +1,10 @@
 name: Post a book
 
 on:
-  schedule:
-    - cron: "23 16 * * *"   # ~12:23 pm New York (11:23 am in winter)
-    - cron: "17 23 * * *"   # ~7:17 pm New York (6:17 pm in winter)
+  # Started on time by the Cloudflare Worker at 12:20 PM and 7:15 PM New York time.
+  # (GitHub's own schedule ran hours late, so it isn't used for posting.)
+  repository_dispatch:
+    types: [scheduled-post]
   workflow_dispatch:
     inputs:
       book:

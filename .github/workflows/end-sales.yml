@@ -2,8 +2,10 @@ name: End flash sales
 
 # Every 10 minutes: puts prices back on any flash sale whose time is up.
 on:
+  repository_dispatch:
+    types: [end-sales]     # on time, from the Cloudflare Worker
   schedule:
-    - cron: "*/10 * * * *"
+    - cron: "*/10 * * * *" # backup in case the Worker is down
   workflow_dispatch:
 
 permissions:
