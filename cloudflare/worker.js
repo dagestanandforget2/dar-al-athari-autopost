@@ -9,9 +9,40 @@
 //   GH_REPO             dagestanandforget2/dar-al-athari-autopost
 
 const HELP =
-  "Send me a book name (English or Arabic) and I'll post it to the channel.\n\n" +
-  "• <code>kitab tawheed</code>\n• <code>ثلاثة الأصول</code>\n" +
-  "• One book per line to post several\n• /random – a random in-stock book";
+  "<b>Dar Al Athari bot</b>\n\n" +
+  "📚 <b>Post a book</b>\n" +
+  "Send a book name (English or Arabic), e.g. <code>kitab at-tauhid</code>\n" +
+  "One per line to post several · /random for a random book\n\n" +
+  "🆕 <b>New arrivals</b>\n" +
+  "/newbooks – books added in the last 24h, in one post\n" +
+  "<code>/newbooks 3d</code> – look back 3 days\n\n" +
+  "⚡️ <b>Flash sales</b> (changes the price on the store)\n" +
+  "<code>/sale kitab at-tauhid 20% 24h</code>\n" +
+  "<code>/sale kitab at-tauhid $12 6h</code>\n" +
+  "Several books: one per line after /sale\n" +
+  "/sales – running sales · <code>/endsale kitab at-tauhid</code>\n" +
+  "/salepost – post a roundup of books on sale\n\n" +
+  "🎟️ <b>Discount codes</b>\n" +
+  "<code>/code RAMADAN15 15%</code> – new code, everything, 48h\n" +
+  "<code>/code TAWHEED5 $5 kitab at-tauhid 3d</code> – one book\n" +
+  "<code>/code Sharh</code> – announce an existing code\n" +
+  "/codes – active codes with uses and sales\n" +
+  "<code>/endcode RAMADAN15</code> – switch a code off\n\n" +
+  "Replies come back in about a minute.";
+
+// The menu Telegram shows when you type "/"
+const COMMANDS = [
+  { command: "help", description: "All commands" },
+  { command: "random", description: "Post a random in-stock book" },
+  { command: "newbooks", description: "Announce books added in the last 24h" },
+  { command: "sale", description: "Start a flash sale: /sale book 20% 24h" },
+  { command: "sales", description: "List running sales" },
+  { command: "endsale", description: "End a sale early: /endsale book" },
+  { command: "salepost", description: "Post a roundup of books on sale" },
+  { command: "code", description: "New or existing discount code: /code NAME 15%" },
+  { command: "codes", description: "Active codes with uses and sales" },
+  { command: "endcode", description: "Switch a code off: /endcode NAME" },
+];
 
 async function tg(env, method, body) {
   const r = await fetch(`https://api.telegram.org/bot${env.TELEGRAM_BOT_TOKEN}/${method}`, {
@@ -43,7 +74,7 @@ async function handle(env, chat, uid, text) {
     },
     body: JSON.stringify({ event_type: "telegram", client_payload: { chat: String(chat), text: text.slice(0, 2000) } }),
   });
-  if (r.status === 204) return reply(env, chat, "⏳ Posting… (about a minute)");
+  if (r.status === 204) return reply(env, chat, "⏳ On it… (about a minute)");
   return reply(env, chat, `⚠️ Couldn't start the job (GitHub said ${r.status}). Check the GH_TOKEN variable.`);
 }
 
@@ -54,13 +85,14 @@ export default {
     // One-time: open https://<your-worker>/setup?key=<WEBHOOK_SECRET> to connect the bot
     if (request.method === "GET" && url.pathname === "/setup") {
       if (url.searchParams.get("key") !== env.WEBHOOK_SECRET) return new Response("Wrong key", { status: 403 });
+      await tg(env, "setMyCommands", { commands: COMMANDS });
       const res = await tg(env, "setWebhook", {
         url: `${url.origin}/telegram`,
         secret_token: env.WEBHOOK_SECRET,
         allowed_updates: ["message"],
         drop_pending_updates: true,
       });
-      return new Response(res.ok ? "✅ Bot connected. Message it a book name." : `❌ ${JSON.stringify(res)}`, {
+      return new Response(res.ok ? "✅ Bot connected and command menu updated. Message it a book name." : `❌ ${JSON.stringify(res)}`, {
         headers: { "content-type": "text/plain; charset=utf-8" },
       });
     }
