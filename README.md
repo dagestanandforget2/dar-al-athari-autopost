@@ -35,3 +35,10 @@ daralathari.com/discount/CODE so the code applies automatically. Needs `read_dis
 **New arrivals (Telegram bot):** `/newbooks` announces every in-stock book published in the last 24 hours
 (`/newbooks 3d` to look further back) in ONE post: a short blurb, an album of up to 10 covers, each title with price
 and link, plus an IG story with up to 4 covers. Already-announced books and Damaged/Clearance copies are skipped.
+
+**Blog guides (Instagram Story + Telegram):** shares a *published* Book Guides article: title, summary and image
+are read from the live page. Three ways to start it:
+- the blog-writing scheduled task adds a file to `blog-queue/` after you approve a post (automatic);
+- Actions → Share a blog article → Run workflow → paste the article link or handle;
+- DM the bot `/blog <link or handle>` (add ` again` at the end to re-share).
+Each article is shared once (`state/blog_posted.json`). Instagram is skipped until `IG_ACCESS_TOKEN` is set.

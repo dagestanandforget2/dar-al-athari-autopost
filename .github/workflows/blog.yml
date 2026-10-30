@@ -1,0 +1,74 @@
+name: Share a blog article
+
+# Posts a published Book Guides article to the Instagram Story and the Telegram channel.
+# Started automatically when a file is added to blog-queue/ (the blog-writing scheduled task does this
+# after you approve a post), or by hand: Actions -> Share a blog article -> Run workflow.
+on:
+  push:
+    branches: [main]
+    paths: ["blog-queue/*.json"]
+  workflow_dispatch:
+    inputs:
+      article:
+        description: "Article URL or handle (e.g. arabic-islamic-book-editions-explained)"
+        type: string
+        required: true
+      mode:
+        description: "What to do"
+        type: choice
+        options: [post to both, telegram only, instagram only, test image only]
+        default: post to both
+      force:
+        description: "Share again even if it was shared before"
+        type: boolean
+        default: false
+
+permissions:
+  contents: write
+
+concurrency: autopost
+
+jobs:
+  share:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Install fonts + packages
+        run: |
+          mkdir -p fonts
+          curl -fsSL -o fonts/Amiri-Bold.ttf    https://github.com/google/fonts/raw/main/ofl/amiri/Amiri-Bold.ttf &
+          curl -fsSL -o fonts/Amiri-Regular.ttf https://github.com/google/fonts/raw/main/ofl/amiri/Amiri-Regular.ttf &
+          pip install -q -r requirements.txt
+          wait
+          python -c "from PIL import features; import sys; sys.exit(0 if features.check('raqm') else 1)" \
+            || (sudo apt-get update -qq && sudo apt-get install -y -qq libraqm0 libfribidi0)
+
+      - name: Share
+        env:
+          IG_ACCESS_TOKEN: ${{ secrets.IG_ACCESS_TOKEN }}
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHANNEL: ${{ secrets.TELEGRAM_CHANNEL }}
+          ARTICLE: ${{ inputs.article }}
+          FORCE: ${{ inputs.force && '1' || '0' }}
+          DRY_RUN: ${{ inputs.mode == 'test image only' && '1' || '0' }}
+          SKIP_IG: ${{ inputs.mode == 'telegram only' && '1' || '0' }}
+          SKIP_TELEGRAM: ${{ inputs.mode == 'instagram only' && '1' || '0' }}
+        run: |
+          git config user.name  "autopost-bot"
+          git config user.email "autopost-bot@users.noreply.github.com"
+          python blog.py
+
+      - name: Save story image for review
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: blog-story-image
+          path: stories/blog-*.jpg
+          retention-days: 7
+          if-no-files-found: ignore
