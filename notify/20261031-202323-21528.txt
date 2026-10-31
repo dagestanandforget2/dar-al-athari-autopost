@@ -1,0 +1,1 @@
+✅ Test from Claude: scheduled-task alerts are set up. You'll get a DM here when a task needs your input or doesn't run normally.
