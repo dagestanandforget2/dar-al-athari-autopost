@@ -1,0 +1,32 @@
+name: Telegram alerts
+
+# Sends alerts from the scheduled tasks to your Telegram DMs.
+# Started when a file is added to notify/ (scheduled tasks do this with ./notify.sh).
+on:
+  push:
+    branches: [main]
+    paths: ["notify/*.txt"]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency: notify
+
+jobs:
+  send:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Send alerts
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_OWNER_ID: ${{ secrets.TELEGRAM_OWNER_ID }}
+        run: |
+          pip install -q requests
+          git config user.name  "autopost-bot"
+          git config user.email "autopost-bot@users.noreply.github.com"
+          python notify.py

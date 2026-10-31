@@ -42,3 +42,8 @@ are read from the live page. Three ways to start it:
 - Actions → Share a blog article → Run workflow → paste the article link or handle;
 - DM the bot `/blog <link or handle>` (add ` again` at the end to re-share).
 Each article is shared once (`state/blog_posted.json`). Instagram is skipped until `IG_ACCESS_TOKEN` is set.
+
+**Alerts from the scheduled tasks (Telegram DMs):** the Claude scheduled tasks message you through the bot when
+they need your input (e.g. a blog draft waiting for approval) or when something didn't run normally. A task runs
+`./notify.sh "message"`, which pushes a file to `notify/`; the "Telegram alerts" workflow sends it to
+`TELEGRAM_OWNER_ID` and moves it to `notify/sent/`. A daily watchdog task also checks that every scheduled task ran.
