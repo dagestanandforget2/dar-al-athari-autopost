@@ -22,7 +22,8 @@
     "kitaab-ul-ilm-shaykh-uthaymeen-كتاب-العلم-للشيخ-العثيمين",
     "islam-for-kids-bundle",
     "enlightening-mankind-with-a-commentary-on-treatise-the-nullifiers-of-islam",
-    "ad-da-wa-ad-dawa-al-jawab-al-kaafi-imam-ibn-al-qayyim-الداء-والدواء-الجواب-الكافي"
+    "ad-da-wa-ad-dawa-al-jawab-al-kaafi-imam-ibn-al-qayyim-الداء-والدواء-الجواب-الكافي",
+    "mutun-talib-al-elm-all-levels-متون-طالب-العلم"
   ],
   "history": [
     {
@@ -116,6 +117,10 @@
     {
       "handle": "ad-da-wa-ad-dawa-al-jawab-al-kaafi-imam-ibn-al-qayyim-الداء-والدواء-الجواب-الكافي",
       "time": "2026-11-05 17:20 UTC"
+    },
+    {
+      "handle": "mutun-talib-al-elm-all-levels-متون-طالب-العلم",
+      "time": "2026-11-06 00:15 UTC"
     }
   ],
   "announced_new": [
