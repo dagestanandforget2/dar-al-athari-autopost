@@ -26,7 +26,8 @@
     "mutun-talib-al-elm-all-levels-متون-طالب-العلم",
     "sharh-umdat-al-fiqh-li-ibn-qudamah-by-shaykh-salih-al-luhaydan-شرح-عمدة-الفقه-للإمام-موفق-الدين-بن-قدامة-المقدسي-الشيخ-صالح-اللحيدان",
     "description-of-hellfire-sifat-an-nar-by-imam-ibn-abi-dunya",
-    "sharh-kitab-al-furqan-ibn-taymiyah-shaykh-salih-al-ash-sheikh-شرح-كتاب-الفرقان-صالح-آل-الشيخ"
+    "sharh-kitab-al-furqan-ibn-taymiyah-shaykh-salih-al-ash-sheikh-شرح-كتاب-الفرقان-صالح-آل-الشيخ",
+    "ta-leeq-ala-mawaadhi-min-sharh-al-aqeedah-al-tahaawiyah-تعليق-على-مواضع-من-شرح-العقيدة-الطحاوية"
   ],
   "history": [
     {
@@ -136,6 +137,10 @@
     {
       "handle": "sharh-kitab-al-furqan-ibn-taymiyah-shaykh-salih-al-ash-sheikh-شرح-كتاب-الفرقان-صالح-آل-الشيخ",
       "time": "2026-11-07 02:22 UTC"
+    },
+    {
+      "handle": "ta-leeq-ala-mawaadhi-min-sharh-al-aqeedah-al-tahaawiyah-تعليق-على-مواضع-من-شرح-العقيدة-الطحاوية",
+      "time": "2026-11-07 17:20 UTC"
     }
   ],
   "announced_new": [
