@@ -33,7 +33,8 @@
     "commentary-on-kitab-at-tawheed-by-salih-al-uthaimeen-2-volume-set",
     "islamic-etiquettes-by-shaykh-bin-baz",
     "the-art-of-trade-craftmanship-and-work-in-islam",
-    "sharh-al-ajroomiyyah-shaykh-uthaymeen-harakat-شرح-الأجرومية-الشيخ-العثيمين"
+    "sharh-al-ajroomiyyah-shaykh-uthaymeen-harakat-شرح-الأجرومية-الشيخ-العثيمين",
+    "seerat-al-ateeq-abi-bakr-al-siddiq-سيرة-العتيق-ابي-بكر-الصديق"
   ],
   "history": [
     {
@@ -171,6 +172,10 @@
     {
       "handle": "sharh-al-ajroomiyyah-shaykh-uthaymeen-harakat-شرح-الأجرومية-الشيخ-العثيمين",
       "time": "2026-11-10 00:16 UTC"
+    },
+    {
+      "handle": "seerat-al-ateeq-abi-bakr-al-siddiq-سيرة-العتيق-ابي-بكر-الصديق",
+      "time": "2026-11-10 17:20 UTC"
     }
   ],
   "announced_new": [
