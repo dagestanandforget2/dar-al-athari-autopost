@@ -192,7 +192,7 @@ def caption_for(books, total, intro=None):
     head = intro or (f"🔥 <b>SALE ON NOW – {total} books discounted</b>" if total > 1 else "🔥 <b>SALE ON NOW</b>")
     lines = [head, ""]
     for b in books:
-        lines.append(f"📚 <a href=\"{b['url']}\"><b>{post.esc(b['title'])}</b></a>")
+        lines.append(f"📚 <a href=\"{post.track(b['url'], 'sale', html=True)}\"><b>{post.esc(b['title'])}</b></a>")
         line = f"      <s>{post.fmt_price(b['compare_at'])}</s> → <b>{post.fmt_price(b['price'])}</b>  (-{pct_off(b)}%)"
         if b["handle"] in ends:
             line += f"\n      ⏰ ends {ends[b['handle']]}"

@@ -202,7 +202,7 @@ def announce(code, headline, summary, book, ends_ts):
 
     redirect = f"/products/{book['handle']}" if book else "/collections/all-books"
     link = f"{post.SHOP_URL}/discount/{code}?redirect={redirect}"
-    on = f"<a href=\"{post.SHOP_URL}/products/{book['handle']}\"><b>{html.escape(book['title'])}</b></a>" if book \
+    on = f"<a href=\"{post.track(post.SHOP_URL + '/products/' + book['handle'], 'code', html=True)}\"><b>{html.escape(book['title'])}</b></a>" if book \
         else "<b>everything in the store</b>"
     extras = [x.strip() for x in (summary or "").split("•")[1:] if x.strip()]  # e.g. "One use per customer"
     caption = (f"🎟️ <b>DISCOUNT CODE</b>\n\n"

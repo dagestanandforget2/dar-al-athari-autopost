@@ -8,7 +8,7 @@ msg="${1:?usage: ./notify.sh \"message\"}"
 f="notify/$(date -u +%Y%m%d-%H%M%S)-$RANDOM.txt"
 printf '%s\n' "$msg" > "$f"
 git add "$f"
-git -c user.name="Daniyal" -c user.email="daniyaldanish009@gmail.com" commit -q -m "notify: queue alert"
+git -c user.name="dar-al-athari-tasks" -c user.email="autopost-bot@users.noreply.github.com" commit -q -m "notify: queue alert"
 for i in 1 2 3 4; do
   git push -q origin HEAD:main && { echo "Alert queued: $f"; exit 0; }
   git pull -q --rebase origin main || true

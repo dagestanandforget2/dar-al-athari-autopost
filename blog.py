@@ -133,14 +133,14 @@ def telegram_caption(art):
     lines = [f"📖 <b>{post.esc(art['title'])}</b>"]
     if art["summary"]:
         lines.append(f"\n{post.esc(art['summary'])}")
-    lines.append(f"\n👉 <a href=\"{art['url']}\">Read the full guide on {post.SITE_LABEL}</a>")
+    lines.append(f"\n👉 <a href=\"{post.track(art['url'], 'blog', html=True)}\">Read the full guide on {post.SITE_LABEL}</a>")
     return "\n".join(lines)
 
 
 def telegram_send(art, photo, caption):
     token = os.environ["TELEGRAM_BOT_TOKEN"]
     chat = os.environ["TELEGRAM_CHANNEL"]
-    keyboard = json.dumps({"inline_keyboard": [[{"text": "📖 Read the guide", "url": art["url"]}]]})
+    keyboard = json.dumps({"inline_keyboard": [[{"text": "📖 Read the guide", "url": post.track(art["url"], "blog")}]]})
     if photo:
         buf = io.BytesIO()
         photo.save(buf, "JPEG", quality=92)

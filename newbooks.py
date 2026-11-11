@@ -62,10 +62,10 @@ def caption_for(books, shown=None):
     shown = books if shown is None else shown
     head = (f"🆕 <b>New books just arrived!</b>\n\nWe've just stocked <b>{n} new title{'s' if n > 1 else ''}</b> "
             f"at Dar Al Athari, alhamdulillah:\n")
-    lines = [f"📚 <a href=\"{b['url']}\">{post.esc(short_title(b['title']))}</a> – {post.fmt_price(b['price'])}"
+    lines = [f"📚 <a href=\"{post.track(b['url'], 'newbooks', html=True)}\">{post.esc(short_title(b['title']))}</a> – {post.fmt_price(b['price'])}"
              for b in shown]
     more = n - len(shown)
-    tail = (f"\n➕ {more} more – " if more else "\n") + f"<a href=\"{NEW_URL}\">see all new arrivals</a>"
+    tail = (f"\n➕ {more} more – " if more else "\n") + f"<a href=\"{post.track(NEW_URL, 'newbooks', html=True)}\">see all new arrivals</a>"
     cap = head + "\n".join(lines) + "\n" + tail
     if len(cap) > 1024 and len(shown) > 1:  # Telegram caption limit: list fewer, link the rest
         return caption_for(books, shown[:-1])

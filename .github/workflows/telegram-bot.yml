@@ -20,13 +20,10 @@ jobs:
           python-version: "3.12"
           cache: pip
 
-      - name: Install fonts + packages
+      # The Amiri fonts are stored in fonts/ in this repo, so nothing is downloaded at post time.
+      - name: Install packages
         run: |
-          mkdir -p fonts
-          curl -fsSL -o fonts/Amiri-Bold.ttf    https://github.com/google/fonts/raw/main/ofl/amiri/Amiri-Bold.ttf &
-          curl -fsSL -o fonts/Amiri-Regular.ttf https://github.com/google/fonts/raw/main/ofl/amiri/Amiri-Regular.ttf &
           pip install -q -r requirements.txt
-          wait
           python -c "from PIL import features; import sys; sys.exit(0 if features.check('raqm') else 1)" \
             || (sudo apt-get update -qq && sudo apt-get install -y -qq libraqm0 libfribidi0)
 

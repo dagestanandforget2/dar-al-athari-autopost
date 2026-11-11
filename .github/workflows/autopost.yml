@@ -32,12 +32,9 @@ jobs:
         with:
           python-version: "3.12"
 
-      - name: Install Arabic text shaping + fonts
-        run: |
-          sudo apt-get update -qq && sudo apt-get install -y -qq libraqm0 libfribidi0
-          mkdir -p fonts
-          curl -fsSL -o fonts/Amiri-Bold.ttf    https://github.com/google/fonts/raw/main/ofl/amiri/Amiri-Bold.ttf
-          curl -fsSL -o fonts/Amiri-Regular.ttf https://github.com/google/fonts/raw/main/ofl/amiri/Amiri-Regular.ttf
+      # The Amiri fonts are stored in fonts/ in this repo, so nothing is downloaded at post time.
+      - name: Install Arabic text shaping
+        run: sudo apt-get update -qq && sudo apt-get install -y -qq libraqm0 libfribidi0
 
       - run: pip install -q -r requirements.txt
 
@@ -62,3 +59,15 @@ jobs:
           name: story-image
           path: stories/*.jpg
           retention-days: 7
+
+
+      - name: Tell the owner if a scheduled post failed
+        if: failure() && github.event_name == 'repository_dispatch'
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_OWNER_ID: ${{ secrets.TELEGRAM_OWNER_ID }}
+        run: |
+          [ -n "$TELEGRAM_BOT_TOKEN" ] && [ -n "$TELEGRAM_OWNER_ID" ] || exit 0
+          curl -fsS "https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage" \
+            --data-urlencode "chat_id=${TELEGRAM_OWNER_ID}" \
+            --data-urlencode "text=⚠️ Autopost: the scheduled book post did not go out. DM me /random to post one now, or open GitHub → Actions → Post a book to see what went wrong." > /dev/null

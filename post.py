@@ -44,6 +44,9 @@ SHOP_URL = os.getenv("SHOP_URL", "https://daralathari.com").rstrip("/")
 COLLECTION = os.getenv("COLLECTION", "all-books")
 SITE_LABEL = os.getenv("SITE_LABEL", "daralathari.com")
 IG_API = "https://graph.instagram.com/v23.0"
+# Tracking tags added to every store link posted to Telegram, so Shopify's reports
+# show what the channel sends (Analytics -> Sessions/Sales by UTM). Set UTM_SOURCE="" to turn off.
+UTM_SOURCE = os.getenv("UTM_SOURCE", "telegram")
 
 # Brand colours
 BG = (17, 32, 26)          # deep green-black
@@ -379,6 +382,13 @@ def ig_post_story(image_url):
 
 
 # ---------------------------------------------------------------- Telegram
+def track(url, campaign="autopost", html=False):
+    """Add utm tags to a store link. html=True escapes '&' for use inside a Telegram HTML caption."""
+    if UTM_SOURCE:
+        url += ("&" if "?" in url else "?") + f"utm_source={UTM_SOURCE}&utm_medium=social&utm_campaign={campaign}"
+    return url.replace("&", "&amp;") if html else url
+
+
 def esc(s):
     return s.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
 
@@ -397,14 +407,14 @@ def telegram_post(book, photo, caption=None):
         if book["vendor"] and book["vendor"].lower() != "dar al athari":
             lines.append(f"✍️ {esc(book['vendor'])}")
         lines.append(f"💵 {price_html(book)}")
-        lines.append(f"\n🛒 <a href=\"{book['url']}\">Order now on {SITE_LABEL}</a>")
+        lines.append(f"\n🛒 <a href=\"{track(book['url'], html=True)}\">Order now on {SITE_LABEL}</a>")
         caption = "\n".join(lines)
     caption = caption[:1024]
 
     buf = io.BytesIO()
     photo.save(buf, "JPEG", quality=92)
     buf.seek(0)
-    keyboard = {"inline_keyboard": [[{"text": f"🛒 Buy now – {fmt_price(book['price'])}", "url": book["url"]}]]}
+    keyboard = {"inline_keyboard": [[{"text": f"🛒 Buy now – {fmt_price(book['price'])}", "url": track(book["url"])}]]}
     r = requests.post(f"https://api.telegram.org/bot{token}/sendPhoto", data={
         "chat_id": chat, "caption": caption, "parse_mode": "HTML",
         "reply_markup": json.dumps(keyboard)}, files={"photo": ("book.jpg", buf, "image/jpeg")}, timeout=60)

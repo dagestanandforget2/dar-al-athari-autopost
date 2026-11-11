@@ -47,3 +47,10 @@ Each article is shared once (`state/blog_posted.json`). Instagram is skipped unt
 they need your input (e.g. a blog draft waiting for approval) or when something didn't run normally. A task runs
 `./notify.sh "message"`, which pushes a file to `notify/`; the "Telegram alerts" workflow sends it to
 `TELEGRAM_OWNER_ID` and moves it to `notify/sent/`. A daily watchdog task also checks that every scheduled task ran.
+
+**Tracking:** every store link posted to Telegram carries `utm_source=telegram` and a campaign name
+(`autopost`, `newbooks`, `sale`, `blog`, `code`), so Shopify's reports show the visits and orders the channel sends.
+
+**Fonts:** the Amiri fonts live in `fonts/` in this repo, so posting never depends on a download.
+
+**If a scheduled post fails:** the workflow DMs you on Telegram straight away.

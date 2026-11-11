@@ -196,7 +196,7 @@ def start_sale(text, catalog, reply, announce=True):
                f"📚 <b>{html.escape(book['title'])}</b>\n"
                f"💵 <s>{post.fmt_price(old_price)}</s>  →  <b>{post.fmt_price(sale_price)}</b>\n"
                f"⏰ Ends {label}\n\n"
-               f"🛒 <a href=\"{book['url']}\">Order now on {post.SITE_LABEL}</a>")
+               f"🛒 <a href=\"{post.track(book['url'], 'sale', html=True)}\">Order now on {post.SITE_LABEL}</a>")
     errors = post.publish(book, caption=caption, record=False)
     msg = (f"✅ Sale started: <b>{html.escape(book['title'])}</b>\n"
            f"{post.fmt_price(old_price)} → <b>{post.fmt_price(sale_price)}</b> ({pct_off}% off)\n"
