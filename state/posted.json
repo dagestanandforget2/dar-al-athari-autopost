@@ -34,7 +34,8 @@
     "islamic-etiquettes-by-shaykh-bin-baz",
     "the-art-of-trade-craftmanship-and-work-in-islam",
     "sharh-al-ajroomiyyah-shaykh-uthaymeen-harakat-شرح-الأجرومية-الشيخ-العثيمين",
-    "seerat-al-ateeq-abi-bakr-al-siddiq-سيرة-العتيق-ابي-بكر-الصديق"
+    "seerat-al-ateeq-abi-bakr-al-siddiq-سيرة-العتيق-ابي-بكر-الصديق",
+    "40-hadith-of-an-nawawi-explanation-sheikh-fawzan"
   ],
   "history": [
     {
@@ -176,6 +177,10 @@
     {
       "handle": "seerat-al-ateeq-abi-bakr-al-siddiq-سيرة-العتيق-ابي-بكر-الصديق",
       "time": "2026-11-10 17:20 UTC"
+    },
+    {
+      "handle": "40-hadith-of-an-nawawi-explanation-sheikh-fawzan",
+      "time": "2026-11-11 00:15 UTC"
     }
   ],
   "announced_new": [
