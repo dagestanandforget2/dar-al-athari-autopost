@@ -35,7 +35,8 @@
     "the-art-of-trade-craftmanship-and-work-in-islam",
     "sharh-al-ajroomiyyah-shaykh-uthaymeen-harakat-شرح-الأجرومية-الشيخ-العثيمين",
     "seerat-al-ateeq-abi-bakr-al-siddiq-سيرة-العتيق-ابي-بكر-الصديق",
-    "40-hadith-of-an-nawawi-explanation-sheikh-fawzan"
+    "40-hadith-of-an-nawawi-explanation-sheikh-fawzan",
+    "kitab-at-tauhid-the-book-of-monotheism"
   ],
   "history": [
     {
@@ -181,6 +182,10 @@
     {
       "handle": "40-hadith-of-an-nawawi-explanation-sheikh-fawzan",
       "time": "2026-11-11 00:15 UTC"
+    },
+    {
+      "handle": "kitab-at-tauhid-the-book-of-monotheism",
+      "time": "2026-11-11 17:20 UTC"
     }
   ],
   "announced_new": [
