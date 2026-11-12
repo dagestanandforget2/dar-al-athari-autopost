@@ -36,7 +36,8 @@
     "sharh-al-ajroomiyyah-shaykh-uthaymeen-harakat-شرح-الأجرومية-الشيخ-العثيمين",
     "seerat-al-ateeq-abi-bakr-al-siddiq-سيرة-العتيق-ابي-بكر-الصديق",
     "40-hadith-of-an-nawawi-explanation-sheikh-fawzan",
-    "kitab-at-tauhid-the-book-of-monotheism"
+    "kitab-at-tauhid-the-book-of-monotheism",
+    "the-danger-of-innovation-in-light-of-the-perfection-of-the-shariʿah"
   ],
   "history": [
     {
@@ -186,6 +187,10 @@
     {
       "handle": "kitab-at-tauhid-the-book-of-monotheism",
       "time": "2026-11-11 17:20 UTC"
+    },
+    {
+      "handle": "the-danger-of-innovation-in-light-of-the-perfection-of-the-shariʿah",
+      "time": "2026-11-12 00:15 UTC"
     }
   ],
   "announced_new": [
