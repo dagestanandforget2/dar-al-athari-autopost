@@ -1,11 +1,16 @@
 {
   "shared": [
-    "three-fundamental-principles-commentaries-compared"
+    "three-fundamental-principles-commentaries-compared",
+    "islamic-books-for-kids-ages-5-to-7"
   ],
   "history": [
     {
       "handle": "three-fundamental-principles-commentaries-compared",
       "time": "2026-11-01 21:05 UTC"
+    },
+    {
+      "handle": "islamic-books-for-kids-ages-5-to-7",
+      "time": "2026-11-14 20:06 UTC"
     }
   ]
 }
