@@ -1,0 +1,1 @@
+🚨 Dar Al Athari check: New Arrivals email task is stopped (suspended: device_absent), so the 1st/15th email won't send until it's re-enabled. Open Claude → Scheduled tasks to look.
