@@ -1,0 +1,1 @@
+🚨 Dar Al Athari check: New Arrivals email task is stopped (suspended: device_absent, needs the computer) so it won't run on Dec 1. Open Claude → Scheduled tasks to look.
