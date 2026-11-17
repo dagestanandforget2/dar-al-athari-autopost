@@ -1,0 +1,1 @@
+🚨 Dar Al Athari check: The 'New Arrivals email (every 2 weeks)' task is stopped (suspended: device_absent), so the Dec 1 email will not send unless it is re-enabled. Everything else (tasks, Instagram/TikTok posts, Telegram book posts) is fine. Open Claude → Scheduled tasks to look.
