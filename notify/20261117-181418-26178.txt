@@ -1,0 +1,1 @@
+🚨 Dar Al Athari check: Telegram autopost missed its 12:20 PM post today (last book post was yesterday 7:16 PM). New Arrivals email task is stopped: suspended (device_absent). Open Claude → Scheduled tasks or the autopost GitHub Actions to look.
