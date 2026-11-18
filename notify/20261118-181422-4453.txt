@@ -1,0 +1,1 @@
+🚨 Dar Al Athari check: New Arrivals email task is suspended (reason: device_absent; it needs your computer for Chrome) and has not run since Nov 1. Open Claude → Scheduled tasks to look.
