@@ -465,6 +465,13 @@ def publish(book, dry=False, skip_ig=None, skip_tg=None, caption=None, record=Tr
     if skip_tg:
         print("Telegram skipped (no TELEGRAM_BOT_TOKEN yet or turned off for this run)")
     print(f"Posting: {book['title']} – {fmt_price(book['price'])}")
+    out = os.getenv("GITHUB_OUTPUT")
+    if out:  # lets the workflow's report step name the book
+        try:
+            with open(out, "a", encoding="utf-8") as fh:
+                fh.write("title=" + " ".join(book["title"].split()) + "\n")
+        except OSError:
+            pass
 
     photo = download_image(book["image"])
     STORY_DIR.mkdir(exist_ok=True)
