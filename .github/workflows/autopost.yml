@@ -39,6 +39,7 @@ jobs:
       - run: pip install -q -r requirements.txt
 
       - name: Post
+        id: post
         env:
           IG_ACCESS_TOKEN: ${{ secrets.IG_ACCESS_TOKEN }}
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
@@ -60,6 +61,37 @@ jobs:
           path: stories/*.jpg
           retention-days: 7
 
+      # Tells the Shelf Locator dashboard whether this run posted. Does nothing until the
+      # AUTOMATION_SECRET secret is added, and can never fail the run.
+      - name: Report run to Shelf Locator
+        if: always() && inputs.mode != 'test image only'
+        continue-on-error: true
+        env:
+          AUTOMATION_SECRET: ${{ secrets.AUTOMATION_SECRET }}
+          POST_OUTCOME: ${{ steps.post.outcome }}
+          POSTED_TITLE: ${{ steps.post.outputs.title }}
+        run: |
+          [ -n "$AUTOMATION_SECRET" ] || exit 0
+          python3 - <<'PY'
+          import json, os, urllib.request
+          ok = os.environ.get("POST_OUTCOME") == "success"
+          title = os.environ.get("POSTED_TITLE", "")
+          if ok:
+              details = f"Posted: {title}" if title else "Posted"
+          else:
+              details = f"Post failed: {title}" if title else "Post failed before a book was chosen"
+          body = json.dumps({"automation": "telegram_post",
+                             "status": "success" if ok else "failed",
+                             "details": details[:300]}).encode()
+          req = urllib.request.Request(
+              "https://shelf-locator.vercel.app/api/automations/run", data=body, method="POST",
+              headers={"Content-Type": "application/json",
+                       "Authorization": "Bearer " + os.environ["AUTOMATION_SECRET"]})
+          try:
+              print("Reported:", urllib.request.urlopen(req, timeout=20).status)
+          except Exception as e:
+              print("Could not report run:", e)
+          PY
 
       - name: Tell the owner if a scheduled post failed
         if: failure() && github.event_name == 'repository_dispatch'
