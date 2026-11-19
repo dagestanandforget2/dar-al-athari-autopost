@@ -1,0 +1,1 @@
+🚨 Dar Al Athari check: Telegram autopost missed its 7:15 PM post (last book post was 12:21 PM today). 'New Arrivals email' task is stopped (device_absent). Open Claude → Scheduled tasks or Metricool to look.
