@@ -1,0 +1,1 @@
+🚨 Dar Al Athari check: New Arrivals email task stopped on its own (suspended: device_absent), it will not run until re-enabled. Also noticed the Telegram book post for last night 7:15 PM (Nov 18) is missing from history. Open Claude → Scheduled tasks to look.
