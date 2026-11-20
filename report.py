@@ -30,9 +30,15 @@ failed = 0
 for path in files:
     try:
         data = json.load(open(path, encoding="utf-8"))
-        body = json.dumps({"automation": str(data["automation"]),
-                           "status": str(data["status"]),
-                           "details": str(data.get("details", ""))[:300]}).encode()
+        payload = {"automation": str(data["automation"]),
+                   "status": str(data["status"]),
+                   "details": str(data.get("details", ""))[:300]}
+        if payload["automation"] == "trial_reels":   # the only automation with these fields
+            if str(data.get("summary", "")).strip():
+                payload["summary"] = str(data["summary"]).strip()[:1500]
+            if str(data.get("change", "")).strip():
+                payload["change"] = str(data["change"]).strip()[:500]
+        body = json.dumps(payload).encode()
     except (ValueError, KeyError) as e:
         print("BAD FILE", path, e)       # unreadable: move it aside so it doesn't block others
         shutil.move(path, os.path.join("reports/sent", "bad-" + os.path.basename(path)))
