@@ -1,0 +1,30 @@
+name: Dashboard reports
+
+# Passes run reports from the scheduled tasks on to the Shelf Locator dashboard.
+# Started when a file is added to reports/ (scheduled tasks do this with ./report.sh).
+on:
+  push:
+    branches: [main]
+    paths: ["reports/*.json"]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency: report
+
+jobs:
+  send:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Send reports
+        env:
+          AUTOMATION_SECRET: ${{ secrets.AUTOMATION_SECRET }}
+        run: |
+          git config user.name  "autopost-bot"
+          git config user.email "autopost-bot@users.noreply.github.com"
+          python report.py
