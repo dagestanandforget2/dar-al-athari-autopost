@@ -74,6 +74,9 @@ jobs:
           [ -n "$AUTOMATION_SECRET" ] || exit 0
           python3 - <<'PY'
           import json, os, urllib.request
+          # The stored secret can carry an invisible byte-order mark or line ending
+          # (it was saved from Windows); strip those so the header is valid.
+          secret = os.environ["AUTOMATION_SECRET"].replace("\ufeff", "").strip()
           ok = os.environ.get("POST_OUTCOME") == "success"
           title = os.environ.get("POSTED_TITLE", "")
           if ok:
@@ -86,7 +89,7 @@ jobs:
           req = urllib.request.Request(
               "https://shelf-locator.vercel.app/api/automations/run", data=body, method="POST",
               headers={"Content-Type": "application/json",
-                       "Authorization": "Bearer " + os.environ["AUTOMATION_SECRET"]})
+                       "Authorization": "Bearer " + secret})
           try:
               print("Reported:", urllib.request.urlopen(req, timeout=20).status)
           except Exception as e:
