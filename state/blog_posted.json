@@ -1,7 +1,8 @@
 {
   "shared": [
     "three-fundamental-principles-commentaries-compared",
-    "islamic-books-for-kids-ages-5-to-7"
+    "islamic-books-for-kids-ages-5-to-7",
+    "shaykh-abdur-razzaq-al-badr-books-guide"
   ],
   "history": [
     {
@@ -11,6 +12,10 @@
     {
       "handle": "islamic-books-for-kids-ages-5-to-7",
       "time": "2026-11-14 20:06 UTC"
+    },
+    {
+      "handle": "shaykh-abdur-razzaq-al-badr-books-guide",
+      "time": "2026-11-21 23:21 UTC"
     }
   ]
 }
