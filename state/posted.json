@@ -52,7 +52,8 @@
     "khushu-in-the-prayer-by-shaykh-abdullah-bin-jar-allah-al-jar-allah",
     "sharh-al-aqeedah-as-safaariniyyah-shaykh-al-uthaymeen-شرح-العقيدة-السفارينية-الشيخ-العثيمين",
     "ar-rad-ala-zanadiqa-wal-jahmiya-imam-ahmad-الرد-على-الزنادقة-و-الجهمية",
-    "sharh-aqeedah-at-tahawiyyah-shaykh-salih-al-ash-sheikh-شرح-العقيدة-الطحاوية-ـ-الشيخ-صالح-آل-الشيخ"
+    "sharh-aqeedah-at-tahawiyyah-shaykh-salih-al-ash-sheikh-شرح-العقيدة-الطحاوية-ـ-الشيخ-صالح-آل-الشيخ",
+    "tafsir-ibn-kathir-10-volume"
   ],
   "history": [
     {
@@ -266,6 +267,10 @@
     {
       "handle": "sharh-aqeedah-at-tahawiyyah-shaykh-salih-al-ash-sheikh-شرح-العقيدة-الطحاوية-ـ-الشيخ-صالح-آل-الشيخ",
       "time": "2026-11-20 17:21 UTC"
+    },
+    {
+      "handle": "tafsir-ibn-kathir-10-volume",
+      "time": "2026-11-21 00:15 UTC"
     }
   ],
   "announced_new": [
