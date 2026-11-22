@@ -1,0 +1,1 @@
+🚨 Dar Al Athari check: New Arrivals email (every 2 weeks) task is stopped (suspension reason: device_absent) and will not run until re-enabled. Open Claude → Scheduled tasks to look.
