@@ -1,0 +1,1 @@
+🚨 Dar Al Athari check: New Arrivals email task (every 2 weeks) is stopped by the system (reason: device_absent) since Nov 15, so it will not run on Dec 1. Open Claude → Scheduled tasks to look.
