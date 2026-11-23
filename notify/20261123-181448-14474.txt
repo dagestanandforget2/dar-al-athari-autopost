@@ -1,0 +1,1 @@
+🚨 Dar Al Athari check: 'New Arrivals email (every 2 weeks)' task stopped on its own (suspended: device_absent), so it will not run on Dec 1. Open Claude → Scheduled tasks or Metricool to look.
