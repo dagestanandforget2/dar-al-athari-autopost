@@ -59,7 +59,8 @@
     "fiqh-according-to-the-qur-an-and-sunnah-volumes-1-2",
     "a-treatise-on-the-silent-admonitions-of-the-graves-by-imam-ibn-abi-dunya",
     "kitab-as-sunnah-by-abdullah-ibn-imam-ahmad-كتاب-السنة-ـ-عبد-الله-بن-الإمام-أحمد",
-    "the-book-of-tawheed-fawzan"
+    "the-book-of-tawheed-fawzan",
+    "the-condemnation-of-begging-by-shaykh-muqbil-bin-hadi-al-wadii-رَحَمَهُ-اللّهُ"
   ],
   "history": [
     {
@@ -301,6 +302,10 @@
     {
       "handle": "the-book-of-tawheed-fawzan",
       "time": "2026-11-24 00:15 UTC"
+    },
+    {
+      "handle": "the-condemnation-of-begging-by-shaykh-muqbil-bin-hadi-al-wadii-رَحَمَهُ-اللّهُ",
+      "time": "2026-11-24 17:20 UTC"
     }
   ],
   "announced_new": [
