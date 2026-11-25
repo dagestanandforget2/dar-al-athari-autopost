@@ -1,0 +1,1 @@
+🚨 Dar Al Athari check: New Arrivals email task is stopped (suspended: device_absent) and missed its Nov 15 run. Open Claude → Scheduled tasks or Metricool to look.
