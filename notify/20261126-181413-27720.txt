@@ -1,0 +1,1 @@
+🚨 Dar Al Athari check: New Arrivals email (every 2 weeks) is stopped: suspended (device_absent), so it did not run on its Nov 15 schedule. Open Claude → Scheduled tasks or Metricool to look.
