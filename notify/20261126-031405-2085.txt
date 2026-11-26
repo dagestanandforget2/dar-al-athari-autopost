@@ -1,0 +1,1 @@
+🚨 Dar Al Athari check: New Arrivals email (every 2 weeks) task is stopped by the system (suspended: device_absent, it needs your computer), so it won't send. Open Claude → Scheduled tasks to look.
