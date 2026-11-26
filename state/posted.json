@@ -63,7 +63,8 @@
     "the-condemnation-of-begging-by-shaykh-muqbil-bin-hadi-al-wadii-رَحَمَهُ-اللّهُ",
     "zaad-al-maaad-ibn-al-qayyim-7-volumes-زاد-المعاد-في-هدي-خير-العباد-للإمام-ابن-قيم-الجوزية",
     "this-is-islam",
-    "al-aqeedah-al-wasitiyyah-matn"
+    "al-aqeedah-al-wasitiyyah-matn",
+    "explanation-of-the-hadith-seven-whom-allah-will-shade-by-shaykh-abdur-razzaq-al-badr"
   ],
   "history": [
     {
@@ -321,6 +322,10 @@
     {
       "handle": "al-aqeedah-al-wasitiyyah-matn",
       "time": "2026-11-26 02:26 UTC"
+    },
+    {
+      "handle": "explanation-of-the-hadith-seven-whom-allah-will-shade-by-shaykh-abdur-razzaq-al-badr",
+      "time": "2026-11-26 17:20 UTC"
     }
   ],
   "announced_new": [
