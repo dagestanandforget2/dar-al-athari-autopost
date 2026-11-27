@@ -1,0 +1,1 @@
+🚨 Dar Al Athari check: New Arrivals email task stopped on its own (suspended: device_absent, it needs your computer/Chrome). Open Claude → Scheduled tasks to look.
