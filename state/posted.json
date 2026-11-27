@@ -65,7 +65,8 @@
     "this-is-islam",
     "al-aqeedah-al-wasitiyyah-matn",
     "explanation-of-the-hadith-seven-whom-allah-will-shade-by-shaykh-abdur-razzaq-al-badr",
-    "sharh-fadl-al-islam-shaykh-salih-al-ash-sheikh-شرح-فضل-الإسلام-ـ-الشيخ-صالح-آل-الشيخ"
+    "sharh-fadl-al-islam-shaykh-salih-al-ash-sheikh-شرح-فضل-الإسلام-ـ-الشيخ-صالح-آل-الشيخ",
+    "al-wala-wal-bara-according-to-the-aqeedah-of-the-salaf-by-shaykh-al-qahtani"
   ],
   "history": [
     {
@@ -331,6 +332,10 @@
     {
       "handle": "sharh-fadl-al-islam-shaykh-salih-al-ash-sheikh-شرح-فضل-الإسلام-ـ-الشيخ-صالح-آل-الشيخ",
       "time": "2026-11-27 00:15 UTC"
+    },
+    {
+      "handle": "al-wala-wal-bara-according-to-the-aqeedah-of-the-salaf-by-shaykh-al-qahtani",
+      "time": "2026-11-27 17:20 UTC"
     }
   ],
   "announced_new": [
